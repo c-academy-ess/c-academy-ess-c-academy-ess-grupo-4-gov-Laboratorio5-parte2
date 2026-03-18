@@ -3,13 +3,11 @@
 # ==========================================
 FROM maven:3.9-eclipse-temurin-21 AS build
 
-#ARG MAVEN_OPTS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
-#WORKDIR .
+WORKDIR /build
 
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Build
 COPY src ./src
 RUN mvn clean package -DskipTests
 
@@ -26,12 +24,11 @@ WORKDIR /app
 # Security: non-root user
 RUN addgroup -S javalin && adduser -S javalin -G javalin
 
-# Copiar apenas o JAR compilado
-COPY --from=build target/taskslist-phase1-1.0-SNAPSHOT-jar-with-dependencies.jar app.jar
+# Copiar apenas o JAR executável com dependências
+COPY --from=build /build/target/*jar-with-dependencies.jar /app/app.jar
 
 # Ownership
 RUN chown -R javalin:javalin /app
 USER javalin
 
-# Executar
-ENTRYPOINT ["sh", "-c", "java -jar app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
