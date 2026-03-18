@@ -49,6 +49,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
           cache: "true"
+          trivy-version: v0.65.0
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v4
@@ -105,11 +106,12 @@ jobs:
           load: true
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.35.0
         with:
-          image-ref: ${{ steps.meta.outputs.tags }}
+          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: sarif
           output: trivy-image-results.sarif
+          trivy-version: v0.65.0
 
       - name: Upload artifact to pipeline metadata
         uses: actions/upload-artifact@v4
